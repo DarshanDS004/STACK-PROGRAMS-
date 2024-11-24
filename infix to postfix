@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+#define size 10
+char stack[size], postfix[20];
+int sp;
+
+void push(char sym) {
+    stack[++sp] = sym;
+}
+
+char pop() {
+    return(stack[sp--]);
+}
+
+char stack_top() {
+    return(stack[sp]);
+}
+
+int pre_operator(char sym) {
+    switch(sym) {
+        case '#':
+        case '(': return(1);
+        case '+':
+        case '-': return(2);
+        case '*':
+        case '/':
+        case '%':
+        case '^': return(3);
+        default:
+            printf("invalid expression\n");
+            exit(1);
+    }
+}
+
+int isAlphanum(char sym) {
+    if((sym >= 'a' && sym <= 'z') || (sym >= 'A' && sym <= 'Z') || (sym >= '0' && sym <= '9')) 
+        return(1);
+    return(0);
+}
+
+void infix_to_postfix(char infix[]) {
+    int i = 0, j = 0;
+    char sym, x;
+    while((sym = infix[i]) != '\0') {
+        if(isAlphanum(sym)) {
+            postfix[j++] = sym;
+        } else if(sym == '(') {
+            push(sym);
+        } else if(sym == ')') {
+            while((x = pop()) != '(') {
+                postfix[j++] = x;
+            }
+        } else {
+            while(pre_operator(sym) <= pre_operator(stack_top())) {
+                x = pop();
+                postfix[j++] = x;
+            }
+            push(sym);
+        }
+        i++;
+    }
+
+    while((x = pop()) != '#') {
+        postfix[j++] = x;
+    }
+    postfix[j] = '\0';  // Null-terminate the postfix expression
+}
+
+int main() {
+    char exp[20];
+    printf("Enter the infix expression: ");
+    scanf("%s", exp);  // Read the entire expression as a string
+    sp = -1;
+    push('#');  // Push '#' to indicate the end of the expression
+    infix_to_postfix(exp);
+    printf("Postfix expression is: %s\n", postfix);
+    return 0;
+}
+
